@@ -108,22 +108,20 @@ creditText.Size = UDim2.new(1, 0, 0.05, 0)
 creditText.Position = UDim2.new(0, 0, 0.95, 0)
 creditText.Parent = background
 
--- Loading duration setup
-local totalTime = 180
+-- Number of steps (percent count)
 local steps = 100
-local stepTime = totalTime / steps
 
--- Progress update loop lasting exactly 180 seconds
+-- Progress update loop with slowing near the end
 for i = 0, steps do
 	percentText.Text = i .. "%"
 
-	-- Smooth bar tween lasting stepTime seconds
-	local tween = TweenService:Create(progressBar, TweenInfo.new(stepTime, Enum.EasingStyle.Linear), {
+	-- Tween progress bar size quickly (0.1 sec) so wait controls pacing
+	local tween = TweenService:Create(progressBar, TweenInfo.new(0.1, Enum.EasingStyle.Linear), {
 		Size = UDim2.new(i / steps, 0, 1, 0)
 	})
 	tween:Play()
 
-	-- Status messages based on percent
+	-- Status messages
 	if i <= 21 then
 		statusText.Text = "Loading assets..."
 	elseif i <= 34 then
@@ -136,20 +134,24 @@ for i = 0, steps do
 		statusText.Text = "DONE"
 	end
 
-	wait(stepTime)
+	-- Wait time starts small (~0.5s), then grows cubically to ~3.5s near 100%
+	local waitTime = 0.5 + (i / steps)^3 * 3
+
+	wait(waitTime)
 end
 
 -- Fade out everything once loading is complete
 for i = 1, 10 do
-	background.BackgroundTransparency = i / 10
-	loadingText.TextTransparency = i / 10
-	statusText.TextTransparency = i / 10
-	percentText.TextTransparency = i / 10
-	stroke.Transparency = i / 10
-	robloxIcon.ImageTransparency = i / 10
-	progressBar.BackgroundTransparency = i / 10
-	progressBarBg.BackgroundTransparency = i / 10
-	creditText.TextTransparency = i / 10
+	local t = i / 10
+	background.BackgroundTransparency = t
+	loadingText.TextTransparency = t
+	statusText.TextTransparency = t
+	percentText.TextTransparency = t
+	stroke.Transparency = t
+	robloxIcon.ImageTransparency = t
+	progressBar.BackgroundTransparency = t
+	progressBarBg.BackgroundTransparency = t
+	creditText.TextTransparency = t
 	wait(0.05)
 end
 
